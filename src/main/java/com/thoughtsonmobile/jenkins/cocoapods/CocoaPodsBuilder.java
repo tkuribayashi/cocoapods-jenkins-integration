@@ -141,9 +141,17 @@ public class CocoaPodsBuilder extends Builder {
 
       final ArgumentListBuilder args = new ArgumentListBuilder();
 
+      int resultTouch = 0, resultRemove = 0;
       if (cleanPods) {
-        args.addTokenized("touch Pods");
-        args.addTokenized("rm -r -f Pods");
+	final ArgumentListBuilder args2 = new ArgumentListBuilder();
+	final ArgumentListBuilder args3 = new ArgumentListBuilder();
+	args2.addTokenized("touch Pods");
+        args3.addTokenized("rm -r -f Pods");
+	resultTouch = launcher.decorateFor(build.getBuiltOn()).launch().cmds(args2).envs(env)
+                 .stdout(listener).pwd(projectRootPath).join();
+        resultRemove = launcher.decorateFor(build.getBuiltOn()).launch().cmds(args3).envs(env)
+                 .stdout(listener).pwd(projectRootPath).join();
+      
       }
 
       args.addTokenized("pod repo update");
@@ -162,7 +170,7 @@ public class CocoaPodsBuilder extends Builder {
         launcher.decorateFor(build.getBuiltOn()).launch().cmds(args2).envs(env)
                  .stdout(listener).pwd(projectRootPath).join();
 
-      return (resultInstall == 0) && (resultUpdate == 0);
+      return (resultInstall == 0) && (resultTouch == 0) && (resultRemove == 0) && (resultUpdate == 0);
     } catch (final IOException e) {
       e.printStackTrace();
     } catch (final InterruptedException e) {
